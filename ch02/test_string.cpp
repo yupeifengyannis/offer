@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstddef>
 #include <cstring>
+#include "gtest/gtest.h"
 // 自己实现一个string类
 
 class MyString{
@@ -56,16 +57,3 @@ MyString::~MyString(){
 	data_ = nullptr;
     }
 }
-
-int main(){
-    MyString str("hello");
-    str = str;
-    str.print();   
-
-    MyString str1;
-    MyString str2;
-    str1 = str2 = str;
-
-}
-
-
