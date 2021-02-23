@@ -1,4 +1,6 @@
 #include <string>
+#include <vector>
+#include <algorithm>
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -46,4 +48,64 @@ TEST(replaceStringSpace, test){
   EXPECT_EQ("%20he%20%20llo%20%20", case5);
 }
 
+struct Node{
+  Node(int data_) : 
+    data(data_),
+    next(nullptr){}
+  Node* next;
+  int data;
+};
+
+Node* initialize_list_from_vector(const vector<int>& vec){
+  std::vector<int> my_vec = vec;
+  std::sort(my_vec.begin(), my_vec.end());
+  Node* head = nullptr;
+  Node* cur = nullptr;
+  for(unsigned int i = 0; i < my_vec.size(); ++i){
+    if(0 == i){
+      head = new Node(my_vec[i]);
+      cur = head;
+    }
+    else{
+      cur->next = new Node(my_vec[i]);
+      cur = cur->next;
+    }
+  }
+  return head;
+}
+
+void free_list(Node** list){
+  Node* node_list = *list; 
+  while(node_list){
+    Node* next = node_list->next;
+    delete node_list;
+    node_list = next;
+  }
+  *list = nullptr;
+}
+
+TEST(MergeList, initAndFree){
+  vector<int> vec;
+  for(int i = 0; i < 10; ++i){
+    vec.push_back(rand() % 1000);
+  }   
+  Node* list_node = initialize_list_from_vector(vec);
+  Node* head = list_node;
+  std::sort(vec.begin(), vec.end());
+  int i = 0;
+  while(list_node){
+    EXPECT_EQ(list_node->data, vec[i++]);
+    list_node = list_node->next;
+  }
+  free_list(&head);
+  EXPECT_EQ(head, list_node);
+}
+
+Node* merge_2_list(Node* left_list, Node* right_list){
+
+}
+
+Node* merge_n_list(vector<Node*> list_vec){
+
+}
 
