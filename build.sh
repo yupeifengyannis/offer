@@ -1,4 +1,5 @@
 #!/bin/bash
+git submodule update --init --recursive
 BUILD_DIR=$PWD/build
 if [ -d ${BUILD_DIR} ]; then
   pushd $BUILD_DIR

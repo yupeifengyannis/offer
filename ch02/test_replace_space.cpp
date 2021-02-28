@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <functional>
+#include <queue>
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -102,10 +104,150 @@ TEST(MergeList, initAndFree){
 }
 
 Node* merge_2_list(Node* left_list, Node* right_list){
+  Node* head = nullptr;
+  Node* cur = nullptr;
+  if(!left_list){
+    head = right_list;
+    return head;
+  }
+  else if(!right_list){
+    head = left_list;
+    return head;
+  }
+  if(left_list->data < right_list->data){
+    head = left_list;
+    left_list = left_list->next;
+  }
+  else{
+    head = right_list;
+    right_list = right_list->next;
+  }
+  cur = head;
+  while(left_list && right_list){
+    if(left_list->data < right_list->data){
+      cur->next = left_list;
+      cur = cur->next;
+      left_list = left_list->next;
+    }
+    else{
+      cur->next = right_list;
+      cur = cur->next;
+      right_list = right_list->next; 
+    }
+  }
+  if(left_list){
+    cur->next = left_list;
+  }
+  if(right_list){
+    cur->next = right_list;
+  }
+  return head;
+}
+
+TEST(MergeList, test1){
+  vector<int> vec1{1,4,5};
+  vector<int> vec2{1,10,13,24};
+  Node* list1 = nullptr;
+  Node* list2 = nullptr;
+  Node* merged_list = nullptr;
+  merged_list = merge_2_list(list1, list2);
+  EXPECT_EQ(merged_list, nullptr);
+  list1 = initialize_list_from_vector(vec1);
+  merged_list = merge_2_list(list1, list2);
+  Node* tmp_list = merged_list;
+  for(int i = 0; i < 3; ++i){
+    EXPECT_EQ(tmp_list->data, vec1[i]);
+    tmp_list = tmp_list->next;
+  }
+  EXPECT_EQ(tmp_list, nullptr);
+  list2 = initialize_list_from_vector(vec2);
+  merged_list = merge_2_list(list1, list2);
+  vector<int> merged_vec = vec1;
+  for(unsigned int i = 0; i < vec2.size(); ++i){
+    merged_vec.push_back(vec2[i]);
+  }
+  std::sort(merged_vec.begin(), merged_vec.end());
+  tmp_list = merged_list;
+  for(unsigned int i = 0; i < merged_vec.size(); ++i){
+    EXPECT_EQ(tmp_list->data, merged_vec[i]);
+    tmp_list = tmp_list->next;
+  }
+  EXPECT_EQ(tmp_list, nullptr);
+  free_list(&merged_list);
+  EXPECT_EQ(merged_list, nullptr);
 
 }
+
+struct NodeCompare : public std::binary_function<Node*, Node*, bool>{
+  bool operator()(const Node* left, const Node* right) const{
+    return left->data > right->data; 
+  }
+};
 
 Node* merge_n_list(vector<Node*> list_vec){
-
+  std::priority_queue<Node*, vector<Node*>, NodeCompare> node_queue;
+  for(auto item : list_vec){
+    if(item){
+      node_queue.push(item);
+    }
+  }
+  Node* head = nullptr;
+  Node* cur = nullptr;
+  if(!node_queue.empty()){
+    head = node_queue.top();
+    node_queue.pop();
+    cur = head;
+    if(cur->next){
+      node_queue.push(cur->next);
+    }
+  }
+  while(!node_queue.empty()){
+    cur->next = node_queue.top();
+    node_queue.pop();
+    cur = cur->next;
+    if(cur->next){
+      node_queue.push(cur->next);
+    }
+  }
+  return head;
 }
+
+vector<int> merge_n_vec(vector<vector<int>>& matrix){
+  vector<int> ret_vec;
+  for(unsigned int i = 0; i < matrix.size(); ++i){
+    for(auto item : matrix[i]){
+      ret_vec.push_back(item);
+    }
+  }
+  std::sort(ret_vec.begin(), ret_vec.end());
+  return ret_vec;
+}
+
+TEST(MergeNList, test1){
+  vector<Node*> vec_list(5, nullptr);
+  Node* merged_list = merge_n_list(vec_list);
+  EXPECT_EQ(merged_list, nullptr);
+  vector<vector<int>> matrix;
+  vector<int> vec1{1,2,4,5};
+  vector<int> vec2{2,3,4,5,5,5,5,6,7,8};
+  vector<int> vec3{3,4,5,6};
+  Node* list1 = initialize_list_from_vector(vec1);
+  Node* list2 = initialize_list_from_vector(vec2);
+  Node* list3 = initialize_list_from_vector(vec3);
+  matrix.push_back(vec1);
+  matrix.push_back(vec2);
+  matrix.push_back(vec3);
+  vec_list[0] = list1;
+  vec_list[1] = list2;
+  vec_list[2] = list3;
+  merged_list = merge_n_list(vec_list);
+  auto merge_vec = merge_n_vec(matrix);
+  Node* tmp_list = merged_list;
+  for(unsigned int i = 0; i < merge_vec.size(); ++i){
+    EXPECT_EQ(tmp_list->data, merge_vec[i]);
+    tmp_list = tmp_list->next;
+  }
+  EXPECT_EQ(tmp_list, nullptr);
+}
+
 
